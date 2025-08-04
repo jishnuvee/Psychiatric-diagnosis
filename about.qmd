@@ -1,0 +1,9 @@
+---
+title: "About"
+---
+
+Hello! My name is Jishnu Veerapaneni, I am an undergraduate at UIC studying neuroscience. My Github account is [jishnuvee](https://github.com/jishnuvee) and my email is jishnuvee2035@gmail.com, please feel free to contact me if you havee any other questions or comments! 
+
+This project explores a psychiatric diagnosis dataset to identify and visualize key factors—such as age, EEG data, IQ, and gender: factors that may be associated with the prevelance of certain psychiatric conditions. The [Github repo](https://github.com/jishnuvee/Psychiatric-diagnosis)  for this project. 
+
+This project was created as a part of [Kane's Data Science Bootcamp](https://bootcamp.davidkane.info/)

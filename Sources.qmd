@@ -1,0 +1,7 @@
+---
+title: "Sources"
+format: html
+---
+
+
+The data used in this project was obtained from the Kaggle website, specifically from the dataset titled [EEG Psychiatric Disorders Dataset](https://www.kaggle.com/datasets/shashwatwork/eeg-psychiatric-disorders-dataset/data). The dataset includes information on various factors potentially associated with the risk of psychiatric conditions, such as age, gender, EEG readings, and IQ. Prior to analysis, the data was cleaned to ensure consistency and accuracy. This included handling missing values, converting categorical variables to consistent formats, and removing incomplete or irrelevant observations that lacked key variable information.

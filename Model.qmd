@@ -1,0 +1,147 @@
+---
+title: "Model"
+format: html
+execute: 
+    echo: false
+---
+
+
+This is my data generating mechanism : 
+
+Major Depressive Disorder vs other 
+$$
+\log\frac{P(\text{Major Depressive Disorder})}{P(\text{Other})} = 2.44
+- 0.064 \times \text{(education)}
+- 0.015 \times \text{(age)}
++ 0.117 \times \text{(sex = female)}
+- 0.041 \times \text{(IQ)}
++ 0.321 \times \text{(AB.A.delta.frontal)}
+$$
+
+Schizophrenia vs other 
+$$
+\log\frac{P(\text{Schizophrenia spectrum})}{P(\text{Other})} = -1.43
++ 0.010 \times \text{(education)}
++ 0.032 \times \text{(age)}
++ 0.118 \times \text{(sex = female)}
+- 0.003 \times \text{(IQ)}
+- 0.055 \times \text{(AB.A.delta.frontal)}
+$$
+
+
+Reference
+
+$$
+\log\frac{P(\text{Other})}{P(\text{baseline})} = -1.18
++ 0.188 \times \text{(education)}
++ 0.0025 \times \text{(age)}
+- 1.16 \times \text{(sex = female)}
++ 0.041 \times \text{(IQ)}
+- 0.184 \times \text{(AB.A.delta.frontal)}
+$$
+
+
+
+
+
+
+```{r}
+#| warning: false
+library(truncnorm)
+library(nnet)
+
+
+
+#| message: false
+#| warning: false
+
+# Install and load required packages
+suppressPackageStartupMessages(library(truncnorm))
+suppressPackageStartupMessages(library(nnet))
+
+library(tidymodels)
+
+
+# Set random seed for reproducibility
+set.seed(123)
+
+# Parameters
+n_patients <- 121  # Number of unique patients
+samples_per_patient <- sample(5:10, n_patients, replace = TRUE)  # 5-10 samples per patient
+n_samples <- sum(samples_per_patient)  # Total samples (~945)
+
+# Generate patient IDs
+patient_id <- rep(1:n_patients, times = samples_per_patient)
+
+# Generate covariates
+sex <- rbinom(n_samples, 1, 0.5)  # 0 = Male, 1 = Female
+age <- rtruncnorm(n_samples, a = 18, b = Inf, mean = 35, sd = 10)
+iq <- rtruncnorm(n_samples, a = 49, b = Inf, mean = 100, sd = 15)
+education <- rtruncnorm(n_samples, a = 0, b = 20, mean = 14, sd = 3)
+ab_a_delta_frontal <- rnorm(n_samples, mean = 5, sd = 1) + 
+                     rep(rnorm(n_patients, 0, 0.5), times = samples_per_patient)
+
+# Generate specific.disorder using multinomial logistic regression
+# Categories: MDD, SCZ, ANX, OTH (reference = OTH)
+beta_0 <- c(MDD = -1.5, SCZ = -2.0, ANX = -1.8)  # Intercepts
+beta_education <- c(MDD = -0.15, SCZ = -0.05, ANX = -0.10)
+beta_age <- c(MDD = 0.01, SCZ = 0.02, ANX = 0.015)
+beta_sex <- c(MDD = 0.5, SCZ = 0.3, ANX = 0.4)
+beta_iq <- c(MDD = -0.02, SCZ = -0.03, ANX = -0.015)
+beta_eeg <- c(MDD = 0.1, SCZ = 0.15, ANX = 0.05)
+patient_effect <- rep(rnorm(n_patients, 0, 0.2), times = samples_per_patient)
+
+# Compute log-odds
+logit_mdd <- beta_0["MDD"] + beta_education["MDD"] * education + 
+             beta_age["MDD"] * age + beta_sex["MDD"] * sex + 
+             beta_iq["MDD"] * iq + beta_eeg["MDD"] * ab_a_delta_frontal + patient_effect
+logit_scz <- beta_0["SCZ"] + beta_education["SCZ"] * education + 
+             beta_age["SCZ"] * age + beta_sex["SCZ"] * sex + 
+             beta_iq["SCZ"] * iq + beta_eeg["SCZ"] * ab_a_delta_frontal + patient_effect
+logit_anx <- beta_0["ANX"] + beta_education["ANX"] * education + 
+             beta_age["ANX"] * age + beta_sex["ANX"] * sex + 
+             beta_iq["ANX"] * iq + beta_eeg["ANX"] * ab_a_delta_frontal + patient_effect
+
+# Compute probabilities (softmax)
+exp_mdd <- exp(logit_mdd)
+exp_scz <- exp(logit_scz)
+exp_anx <- exp(logit_anx)
+exp_oth <- 1  # Reference category
+denom <- exp_mdd + exp_scz + exp_anx + exp_oth
+prob_mdd <- exp_mdd / denom
+prob_scz <- exp_scz / denom
+prob_anx <- exp_anx / denom
+prob_oth <- exp_oth / denom
+
+# Generate specific.disorder
+specific_disorder <- sapply(1:n_samples, function(i) {
+  sample(c("Major Depressive Disorder", "Schizophrenia spectrum", "Anxiety", "Other"),
+         size = 1, prob = c(prob_mdd[i], prob_scz[i], prob_anx[i], prob_oth[i]))
+})
+
+# Create data frame
+df <- data.frame(
+  no = patient_id,
+  sex = as.factor(sex),
+  age = age,
+  IQ = iq,
+  education = education,
+  AB.A.delta.frontal = ab_a_delta_frontal,
+  specific.disorder = as.factor(specific_disorder)
+)
+
+# Save data to CSV
+write.csv(df, "simulated_eeg_data.csv", row.names = FALSE)
+
+# Fit multinomial logistic regression model using tidymodels
+fit_disorder <- multinom_reg(mode = "classification", engine = "nnet") |> 
+  fit(specific.disorder ~ education + age + sex + IQ + AB.A.delta.frontal, data = df)
+
+# View results with confidence intervals
+tidy(fit_disorder, conf.int = TRUE)
+
+
+```
+
+
+
