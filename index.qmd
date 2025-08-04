@@ -1,163 +1,33 @@
 ---
 title: "Predicting Psychiatric Disorders from EEG Bands"
-author: "Jishnu Veerapaneni" 
+author: "Jishnu Veerapaneni"
+format: html
 execute:
   echo: false
+  warning: false
+  message: false
 ---
 
 
 
-
 ```{r}
-#| message: false
-#| warning: false
-suppressPackageStartupMessages(library(tidyverse))
-suppressPackageStartupMessages(library(gt))
-suppressPackageStartupMessages(library(DT))
-library(tidyverse)
-library(gt)
-library(primer.data)
-library(tidymodels)
-library(broom)
-library(marginaleffects)
+# Load libraries quietly
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(ggplot2)
+  library(dplyr)
+  library(tidyr)
+})
 
-```
-
-
-
-
-
-```{r}
-#| message: false
-#| warning: false
-
-library(DT)
-
-# Load data
+# Load dataset
 extract_path <- "C:/Users/jishn/projects/Psychiatric-diagnosis"
 file_path <- file.path(extract_path, "EEG.machinelearing_data_BRMH.csv")
 x <- read.csv(file_path)
 
-# Create a smaller preview (200 rows × 20 columns)
-# Adjust columns you want to keep — here we take the first 20
-small_x <- x[1:200, 1:20]
 
-# Interactive preview without triggering DT's large-data warning
-DT::datatable(
-  small_x,
-  options = list(
-    pageLength = 25,
-    scrollX = TRUE,
-    autoWidth = TRUE,
-    deferRender = TRUE
-  ),
-  caption = "EEG Psychiatric Disorders Dataset (Preview: 200 rows × 20 columns)"
-)
-```
-
-
-```{r}
-#| message: false
-#| warning: false
-
-
-
-# Load dataset (already loaded above as x, but reloading here if needed)
-extract_path <- "C:/Users/jishn/projects/Psychiatric-diagnosis"
-file_path <- file.path(extract_path, "EEG.machinelearing_data_BRMH.csv")
-x <- read.csv(file_path)
-
-# Get all column names
-col_names <- colnames(x)
-
-# Function to parse and describe columns
-describe_col <- function(name) {
-  parts <- unlist(strsplit(name, "\\."))
-
-  group <- parts[1]
-  subgroup <- ifelse(length(parts) > 1, parts[2], NA)
-  band <- ifelse(any(c("delta","theta","alpha","beta","gamma") %in% parts), 
-                 parts[which(parts %in% c("delta","theta","alpha","beta","gamma"))], 
-                 NA)
-  feature <- ifelse(grepl("^a", parts[length(parts)]), "Absolute Power", 
-                    ifelse(grepl("^r", parts[length(parts)]), "Relative Power", "Unknown Feature"))
-  electrode <- gsub("^[ar]", "", parts[length(parts)])
-
-  paste0(feature, " of ", band, " band at electrode ", electrode, 
-         " (Group: ", group, ifelse(!is.na(subgroup), paste0("-", subgroup), ""), ")")
-}
-
-mapping <- data.frame(
-  Column_Name = col_names,
-  Description = sapply(col_names, describe_col),
-  stringsAsFactors = FALSE
-)
-
-mapping_by_band <- split(mapping, sapply(col_names, function(n) {
-  if (grepl("delta", n)) "Delta"
-  else if (grepl("theta", n)) "Theta"
-  else if (grepl("alpha", n)) "Alpha"
-  else if (grepl("beta", n)) "Beta"
-  else if (grepl("gamma", n)) "Gamma"
-  else "Other"
-}))
-
-
-```
-
-# Electrode locations 
-```{r}
-#| message: false
-#| warning: false
-library(ggplot2)
-
-# All electrodes from the dataset
-electrodes_to_plot <- c("C3", "C4", "F3", "F4", "F7", "F8", "FP1", "FP2", 
-                        "O1", "O2", "P3", "P4", "T3", "T4", "T5", "T6")
-
-# Approximate 10-20 coordinates (filtered)
-electrodes <- data.frame(
-  electrode = electrodes_to_plot,
-  x = c(-0.7, 0.7, -0.7, 0.7, -1.0, 1.0, -0.5, 0.5, 
-        -0.5, 0.5, -0.7, 0.7, -1.0, 1.0, -1.0, 1.0),
-  y = c(0, 0, 0.5, 0.5, 0.5, 0.5, 1.0, 1.0, 
-        -1.0, -1.0, -0.5, -0.5, 0, 0, -0.5, -0.5)
-)
-
-# Frequency bands present in your dataset
-bands <- c("Delta", "Theta", "Alpha", "Beta", "Gamma")
-
-# Combine bands and electrode info
-plot_data <- merge(electrodes, data.frame(band = bands))
-
-# Color palette
-band_colors <- c(
-  Gamma = "purple"
-)
-
-# Plot
-ggplot(plot_data, aes(x, y)) +
-  geom_point(aes(color = band), size = 5, alpha = 0.7) +
-  geom_text(aes(label = electrode), vjust = -1.2, size = 4.2) +
-  scale_color_manual(values = band_colors) +
-  coord_equal() +
-  theme_void() +
-  ggtitle("EEG Electrode Map (from Dataset)") +
-  theme(plot.title = element_text(hjust = 0.5))
-
-```
-
-
-
-
-
-
-
-
-```{r}
-library(ggplot2)
-
+# ---------------------------
 # Scatter plot: FP1 vs FP2 delta power
+# ---------------------------
 scatter_plot <- ggplot(x, aes(x = AB.A.delta.a.FP1, y = AB.A.delta.b.FP2, color = specific.disorder)) +
   geom_point(alpha = 0.7, size = 2) +
   theme_minimal() +
@@ -169,14 +39,12 @@ scatter_plot <- ggplot(x, aes(x = AB.A.delta.a.FP1, y = AB.A.delta.b.FP2, color 
   ) +
   theme(plot.title = element_text(hjust = 0.5))
 
-scatter_plot
+print(scatter_plot)
 
 
-
-library(dplyr)
-library(tidyr)
-
-# Compute summary stats
+# ---------------------------
+# Bar chart with error bars
+# ---------------------------
 summary_stats <- x %>%
   group_by(specific.disorder) %>%
   summarise(
@@ -187,13 +55,11 @@ summary_stats <- x %>%
     .groups = "drop"
   )
 
-# Convert to long format for plotting
 summary_long <- summary_stats %>%
   pivot_longer(cols = c(mean_fp1, mean_fp2, se_fp1, se_fp2),
                names_to = c(".value", "electrode"),
                names_pattern = "(mean|se)_(fp1|fp2)")
 
-# Bar chart with error bars (95% CI)
 summary_plot <- ggplot(summary_long, aes(x = specific.disorder, y = mean, fill = electrode)) +
   geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +
   geom_errorbar(aes(ymin = mean - 1.96*se, ymax = mean + 1.96*se),
@@ -208,46 +74,21 @@ summary_plot <- ggplot(summary_long, aes(x = specific.disorder, y = mean, fill =
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         plot.title = element_text(hjust = 0.5))
 
-summary_plot
+print(summary_plot)
+
+
+###
+
+
 
 ```
 
+###
+
+Psychiatric disorders are shaped by a wide range of neurological, cognitive, and demographic factors that can be captured through EEG data.
+Using the EEG Psychiatric Disorders Dataset from Kaggle, which includes variables such as age, gender, IQ, and EEG readings, we seek to understand the relationship between brainwave activity and psychiatric conditions. The data was cleaned by filtering out incomplete records and focusing on delta power values at the FP1 and FP2 electrodes to explore patterns of neural slowing across disorders. While delta power at FP1 and FP2 electrodes are strongly correlated across disorders, individuals with schizophrenia and alcohol use disorder show unusually high delta power values suggesting that pronounced neural slowing may distinguish these conditions from others. We modeled psychiatric diagnosis as a categorical outcome using a multinomial model based on brainwave activity, age, gender, and cognitive ability. Individuals with unusually high frontal delta power were more likely to be classified with schizophrenia or alcohol use disorder.
 
 
 
-
-
-
-# this is for another page
-```{r}
-ggplot(x, aes(x = specific.disorder, y = AB.A.delta.a.FP1, fill = specific.disorder)) +
-  geom_boxplot(alpha = 0.7) +
-  theme_minimal() +
-  labs(
-    title = "Distribution of FP1 Delta Power Across Disorders",
-    x = "Specific Disorder",
-    y = "Absolute Delta Power (FP1)"
-  ) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1),
-        plot.title = element_text(hjust = 0.5))
-
-
-
-
-
-
-
-ggplot(x, aes(x = specific.disorder, y = AB.A.delta.b.FP2, fill = specific.disorder)) +
-  geom_boxplot(alpha = 0.7) +
-  theme_minimal() +
-  labs(
-    title = "Distribution of FP2 Delta Power Across Disorders",
-    x = "Specific Disorder",
-    y = "Absolute Delta Power (FP2)"
-  ) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1),
-        plot.title = element_text(hjust = 0.5))
-
-```
 
 

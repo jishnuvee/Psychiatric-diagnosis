@@ -1,5 +1,9 @@
 /.quarto/
 
 
+_site
+
+_files
+
 _ignore
 
