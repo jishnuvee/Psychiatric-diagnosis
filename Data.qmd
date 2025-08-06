@@ -1,0 +1,320 @@
+---
+title: "Data "
+format: html
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{r}
+# Load libraries quietly
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(ggplot2)
+  library(dplyr)
+  library(tidyr)
+})
+
+# Load dataset
+extract_path <- "C:/Users/jishn/projects/Psychiatric-diagnosis"
+file_path <- file.path(extract_path, "EEG.machinelearing_data_BRMH.csv")
+x <- read.csv(file_path)
+
+
+# ---------------------------
+# Scatter plot: FP1 vs FP2 delta power
+# ---------------------------
+scatter_plot <- ggplot(x, aes(x = AB.A.delta.a.FP1, y = AB.A.delta.b.FP2, color = specific.disorder)) +
+  geom_point(alpha = 0.7, size = 2) +
+  theme_minimal() +
+  labs(
+    title = "FP1 vs FP2 Delta Power by Psychiatric Disorder",
+    x = "Absolute Delta Power (FP1)",
+    y = "Absolute Delta Power (FP2)",
+    color = "Specific Disorder"
+  ) +
+  theme(plot.title = element_text(hjust = 0.5))
+
+print(scatter_plot)
+
+``` 
+
+
+
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+# Load data
+data <- read.csv("EEG.machinelearing_data_BRMH.csv")
+
+# Identify key delta electrodes by exact match
+key_delta_cols <- c("AB.A.delta.a.FP1",
+                    "AB.A.delta.d.F3",
+                    "AB.A.delta.i.C3",
+                    "AB.A.delta.o.Pz",
+                    "AB.A.delta.r.O1")
+
+# Pivot longer for plotting
+data_long <- data %>%
+  select(specific.disorder, all_of(key_delta_cols)) %>%
+  pivot_longer(cols = -specific.disorder,
+               names_to = "Position",
+               values_to = "DeltaPower")
+
+# Clean position names (remove prefix)
+data_long$Position <- sub(".*\\.", "", data_long$Position)
+
+# Violin plot
+ggplot(data_long, aes(x = specific.disorder, y = DeltaPower, fill = specific.disorder)) +
+  geom_violin(trim = FALSE, alpha = 0.6) +
+  geom_boxplot(width = 0.1, outlier.size = 0.5, alpha = 0.5) +
+  facet_wrap(~ Position, scales = "free_y") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Delta Power at Key Electrode Positions by Specific Disorder",
+       x = "Specific Disorder",
+       y = "Delta Power")
+
+```
+
+
+
+
+
+
+###
+
+
+####
+```{r}
+# ---------------------------
+# Bar chart with error bars
+# ---------------------------
+summary_stats <- x %>%
+  group_by(specific.disorder) %>%
+  summarise(
+    mean_fp1 = mean(AB.A.delta.a.FP1, na.rm = TRUE),
+    mean_fp2 = mean(AB.A.delta.b.FP2, na.rm = TRUE),
+    se_fp1 = sd(AB.A.delta.a.FP1, na.rm = TRUE)/sqrt(n()),
+    se_fp2 = sd(AB.A.delta.b.FP2, na.rm = TRUE)/sqrt(n()),
+    .groups = "drop"
+  )
+
+summary_long <- summary_stats %>%
+  pivot_longer(cols = c(mean_fp1, mean_fp2, se_fp1, se_fp2),
+               names_to = c(".value", "electrode"),
+               names_pattern = "(mean|se)_(fp1|fp2)")
+
+summary_plot <- ggplot(summary_long, aes(x = specific.disorder, y = mean, fill = electrode)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +
+  geom_errorbar(aes(ymin = mean - 1.96*se, ymax = mean + 1.96*se),
+                position = position_dodge(width = 0.8), width = 0.2) +
+  theme_minimal() +
+  labs(
+    title = "Mean Delta Power (±95% CI) by Disorder",
+    x = "Specific Disorder",
+    y = "Mean Absolute Delta Power",
+    fill = "Electrode"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(hjust = 0.5))
+
+print(summary_plot)
+
+
+###
+
+
+
+```
+
+
+
+```{r}
+# This code allows viewing of all specific electrode power/data and how it varies depending on each disorder
+if(!require(shiny)) install.packages("shiny")
+library(shiny)
+library(plotly)
+library(dplyr)
+
+
+# Ensure Healthy control appears first in factor levels
+x$specific.disorder <- factor(x$specific.disorder,
+                              levels = c("Healthy control",
+                                       setdiff(unique(x$specific.disorder), "Healthy control")))
+
+
+ui <- fluidPage(
+  titlePanel("EEG Power by Specific Disorder"),
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("feature", "Choose EEG Feature:",
+                 choices = names(x)[grep("AB.A", names(x))],
+                 selected = "AB.A.delta.a.FP1")
+    ),
+    mainPanel(
+      plotlyOutput("interactivePlot")
+    )
+  )
+)
+
+
+server <- function(input, output) {
+  output$interactivePlot <- renderPlotly({
+    feature_col <- sym(input$feature)
+   
+    plot_data <- x %>%
+      select(specific.disorder, !!feature_col) %>%
+      filter(!is.na(specific.disorder), !is.na(!!feature_col)) %>%
+      mutate(
+        clean_labels = gsub(" disorder", "", specific.disorder, ignore.case = TRUE),  # Clean labels for x-axis
+        legend_labels = specific.disorder  # Keep original labels for legend
+      ) %>%
+      # Ensure Healthy control appears first in both clean and original labels
+      mutate(
+        clean_labels = factor(clean_labels, levels = c("Healthy control", setdiff(unique(clean_labels), "Healthy control"))),
+        legend_labels = factor(legend_labels, levels = c("Healthy control", setdiff(unique(legend_labels), "Healthy control")))
+      )
+   
+    plot_ly(
+      plot_data,
+      x = ~clean_labels,  # Use clean labels for x-axis ticks
+      y = as.formula(paste0("~`", input$feature, "`")),
+      type = 'box',
+      color = ~legend_labels,  # Use original labels for legend
+      boxpoints = 'all',
+      jitter = 0.3,
+      pointpos = -1.8
+    ) %>%
+      layout(
+        title = list(
+          text = paste("EEG Power at", gsub(".*\\.", "", gsub("AB\\.A\\.[^.]*\\.[^.]*\\.", "", input$feature)), "Electrode"),  # Extract electrode name with "Electrode" after
+          x = 0.5,  # Center the main title
+          xanchor = 'center'
+        ),
+        xaxis = list(title = "Specific Disorder"),
+        yaxis = list(
+          title = "EEG Power",  # Simple, clean y-axis title without any disorder reference
+          titlefont = list(size = 14)
+        ),
+        margin = list(b = 150, t = 80),  # Increased top margin to give more space for subtitle
+        annotations = list(
+          list(
+            text = "EEG power at chosen electrodes across disorders versus healthy controls",
+            x = 0.5,        # center horizontally
+            y = 1.05,       # position higher above the plot area
+            xref = "paper",
+            yref = "paper",
+            showarrow = FALSE,
+            xanchor = "center",  # ensure centered
+            font = list(size = 10, color = "gray")
+          )
+        )
+      )
+  })
+}
+
+
+shinyApp(ui, server)
+```
+
+
+
+
+
+
+
+```{r}
+
+
+
+# delta power at FP1 & FP2 
+library(dplyr)
+library(tidyr)
+library(plotly)
+
+# Load data
+data <- read.csv("EEG.machinelearing_data_BRMH.csv")
+
+# FP1 and FP2 columns
+fp1_col <- "AB.A.delta.a.FP1"
+fp2_col <- "AB.A.delta.b.FP2"
+
+# Filter only rows with FP1 & FP2 values
+clean_data <- data %>%
+  filter(!is.na(.data[[fp1_col]]) & !is.na(.data[[fp2_col]])) %>%
+  select(specific.disorder,
+         FP1 = all_of(fp1_col),
+         FP2 = all_of(fp2_col))
+
+# Short label for axis (remove 'disorder' but keep full in legend)
+clean_data <- clean_data %>%
+  mutate(short_label = gsub(" disorder", "", specific.disorder))
+
+# Long format
+plot_data <- clean_data %>%
+  pivot_longer(cols = c(FP1, FP2),
+               names_to = "Electrode",
+               values_to = "DeltaPower")
+
+# Create full plot
+p_all <- plot_ly(
+  data = plot_data,
+  x = ~short_label,
+  y = ~DeltaPower,
+  color = ~specific.disorder,
+  type = 'violin',
+  split = ~Electrode,
+  box = list(visible = TRUE),
+  meanline = list(visible = TRUE),
+  hoverinfo = 'text',
+  text = ~paste("Disorder:", specific.disorder,
+                "<br>Electrode:", Electrode,
+                "<br>Delta Power:", round(DeltaPower, 2))
+) %>%
+  layout(
+    title = "Delta Power at FP1 and FP2 Across Psychiatric Disorders",
+    yaxis = list(title = "Delta Power"),
+    xaxis = list(title = "Specific Disorder"),
+    legend = list(orientation = "v", x = 1.05, y = 1),  # Legend to the right
+    updatemenus = list(
+      list(
+        type = "buttons",
+        direction = "right",
+        x = 0.5,
+        y = -0.25,   # Place below plot
+        showactive = TRUE,
+        buttons = list(
+          list(
+            label = "Show All",
+            method = "restyle",
+            args = list("visible", rep(TRUE, length(unique(plot_data$specific.disorder))))
+          ),
+          list(
+            label = "Alcohol & Schizophrenia Only",
+            method = "restyle",
+            args = list("visible",
+                        plot_data$specific.disorder %in%
+                          c("Alcohol use disorder", "Schizophrenia"))
+          )
+        )
+      )
+    )
+  )
+
+p_all
+
+```
+
+
+
+
+
+
+
+

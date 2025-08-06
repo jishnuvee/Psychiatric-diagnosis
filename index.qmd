@@ -1,5 +1,5 @@
 ---
-title: "Predicting Psychiatric Disorders from EEG Bands"
+title: "Neural Markers of Psychiatric Disorders"
 author: "Jishnu Veerapaneni"
 format: html
 execute:
@@ -10,85 +10,145 @@ execute:
 
 
 
+
 ```{r}
-# Load libraries quietly
-suppressPackageStartupMessages({
-  library(tidyverse)
-  library(ggplot2)
-  library(dplyr)
-  library(tidyr)
-})
+# Load required packages
+library(tidyverse)
 
-# Load dataset
-extract_path <- "C:/Users/jishn/projects/Psychiatric-diagnosis"
-file_path <- file.path(extract_path, "EEG.machinelearing_data_BRMH.csv")
-x <- read.csv(file_path)
+# Set working directory to ensure correct file path
+setwd("c:/Users/jishn/projects/Psychiatric-diagnosis")
 
+# Read the CSV file with the correct name
+data_text <- read.csv("EEG.machinelearing_data_BRMH.csv")
 
-# ---------------------------
-# Scatter plot: FP1 vs FP2 delta power
-# ---------------------------
-scatter_plot <- ggplot(x, aes(x = AB.A.delta.a.FP1, y = AB.A.delta.b.FP2, color = specific.disorder)) +
-  geom_point(alpha = 0.7, size = 2) +
-  theme_minimal() +
-  labs(
-    title = "FP1 vs FP2 Delta Power by Psychiatric Disorder",
-    x = "Absolute Delta Power (FP1)",
-    y = "Absolute Delta Power (FP2)",
-    color = "Specific Disorder"
-  ) +
-  theme(plot.title = element_text(hjust = 0.5))
+# Select relevant columns for FP1 and FP2
+fp1_columns <- c("AB.A.delta.a.FP1", "AB.B.theta.a.FP1", "AB.C.alpha.a.FP1", 
+                 "AB.D.beta.a.FP1", "AB.E.highbeta.a.FP1", "AB.F.gamma.a.FP1")
+fp2_columns <- c("AB.A.delta.b.FP2", "AB.B.theta.b.FP2", "AB.C.alpha.b.FP2", 
+                 "AB.D.beta.b.FP2", "AB.E.highbeta.b.FP2", "AB.F.gamma.b.FP2")
 
-print(scatter_plot)
-
-
-# ---------------------------
-# Bar chart with error bars
-# ---------------------------
-summary_stats <- x %>%
+# Process data: Calculate mean power by specific disorder
+fp1_data <- data_text %>%
   group_by(specific.disorder) %>%
-  summarise(
-    mean_fp1 = mean(AB.A.delta.a.FP1, na.rm = TRUE),
-    mean_fp2 = mean(AB.A.delta.b.FP2, na.rm = TRUE),
-    se_fp1 = sd(AB.A.delta.a.FP1, na.rm = TRUE)/sqrt(n()),
-    se_fp2 = sd(AB.A.delta.b.FP2, na.rm = TRUE)/sqrt(n()),
-    .groups = "drop"
-  )
+  summarise(across(all_of(fp1_columns), mean, na.rm = TRUE)) %>%
+  pivot_longer(cols = all_of(fp1_columns), 
+               names_to = "band", 
+               values_to = "power") %>%
+  mutate(band = case_when(
+    band == "AB.A.delta.a.FP1" ~ "Delta",
+    band == "AB.B.theta.a.FP1" ~ "Theta",
+    band == "AB.C.alpha.a.FP1" ~ "Alpha",
+    band == "AB.D.beta.a.FP1" ~ "Beta",
+    band == "AB.E.highbeta.a.FP1" ~ "HighBeta",
+    band == "AB.F.gamma.a.FP1" ~ "Gamma"
+  ))
 
-summary_long <- summary_stats %>%
-  pivot_longer(cols = c(mean_fp1, mean_fp2, se_fp1, se_fp2),
-               names_to = c(".value", "electrode"),
-               names_pattern = "(mean|se)_(fp1|fp2)")
+fp2_data <- data_text %>%
+  group_by(specific.disorder) %>%
+  summarise(across(all_of(fp2_columns), mean, na.rm = TRUE)) %>%
+  pivot_longer(cols = all_of(fp2_columns), 
+               names_to = "band", 
+               values_to = "power") %>%
+  mutate(band = case_when(
+    band == "AB.A.delta.b.FP2" ~ "Delta",
+    band == "AB.B.theta.b.FP2" ~ "Theta",
+    band == "AB.C.alpha.b.FP2" ~ "Alpha",
+    band == "AB.D.beta.b.FP2" ~ "Beta",
+    band == "AB.E.highbeta.b.FP2" ~ "HighBeta",
+    band == "AB.F.gamma.b.FP2" ~ "Gamma"
+  ))
 
-summary_plot <- ggplot(summary_long, aes(x = specific.disorder, y = mean, fill = electrode)) +
-  geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +
-  geom_errorbar(aes(ymin = mean - 1.96*se, ymax = mean + 1.96*se),
-                position = position_dodge(width = 0.8), width = 0.2) +
+# Calculate total power for ordering
+total_power_fp1 <- fp1_data %>%
+  group_by(specific.disorder) %>%
+  summarise(total_power = sum(power, na.rm = TRUE)) %>%
+  arrange(total_power)
+
+total_power_fp2 <- fp2_data %>%
+  group_by(specific.disorder) %>%
+  summarise(total_power = sum(power, na.rm = TRUE)) %>%
+  arrange(total_power)
+
+# Merge total power back into fp1_data and fp2_data
+fp1_data <- fp1_data %>%
+  left_join(total_power_fp1, by = "specific.disorder")
+fp2_data <- fp2_data %>%
+  left_join(total_power_fp2, by = "specific.disorder")
+
+# Reorder specific.disorder: "Healthy control" first, then by total_power
+fp1_data$specific.disorder <- fct_relevel(fp1_data$specific.disorder, "Healthy control") %>%
+  fct_reorder(., fp1_data$total_power)
+fp2_data$specific.disorder <- fct_relevel(fp2_data$specific.disorder, "Healthy control") %>%
+  fct_reorder(., fp2_data$total_power)
+
+# Define colors for frequency bands
+band_colors <- c("Delta" = "#FF6B6B", "Theta" = "#4ECDC4", "Alpha" = "#45B7D1", 
+                 "Beta" = "#96CEB4", "HighBeta" = "#FFEEAD", "Gamma" = "#D4A5A5")
+
+# Plot for FP1
+fp1_plot <- ggplot(fp1_data, aes(x = specific.disorder, y = power, fill = band)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = band_colors) +
+  labs(title = "Average EEG Power at FP1 by Specific Disorder",
+       x = "Specific Disorder",
+       y = "Average Power",
+       fill = "Frequency Band") +
   theme_minimal() +
-  labs(
-    title = "Mean Delta Power (±95% CI) by Disorder",
-    x = "Specific Disorder",
-    y = "Mean Absolute Delta Power",
-    fill = "Electrode"
-  ) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1),
-        plot.title = element_text(hjust = 0.5))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-print(summary_plot)
+# Plot for FP2
+fp2_plot <- ggplot(fp2_data, aes(x = specific.disorder, y = power, fill = band)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = band_colors) +
+  labs(title = "Average EEG Power at FP2 by Specific Disorder",
+       x = "Specific Disorder",
+       y = "Average Power",
+       fill = "Frequency Band") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
+# Display plots in Quarto
+print(fp1_plot)
+print(fp2_plot)
 
-###
+# Save plots as PNG files
+ggsave("FP1_EEG_Power.png", fp1_plot, width = 10, height = 6, dpi = 300)
+ggsave("FP2_EEG_Power.png", fp2_plot, width = 10, height = 6, dpi = 300)
 
-
+# Print interesting fact
+cat("Interesting Fact: Preliminary analysis suggests that 'Healthy control' subjects may exhibit higher alpha power at FP1 and FP2 compared to other disorders, potentially indicating greater relaxation or focused attention.\n")
 
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ###
 
 Psychiatric disorders are shaped by a wide range of neurological, cognitive, and demographic factors that can be captured through EEG data.
 Using the EEG Psychiatric Disorders Dataset from Kaggle, which includes variables such as age, gender, IQ, and EEG readings, we seek to understand the relationship between brainwave activity and psychiatric conditions. The data was cleaned by filtering out incomplete records and focusing on delta power values at the FP1 and FP2 electrodes to explore patterns of neural slowing across disorders. While delta power at FP1 and FP2 electrodes are strongly correlated across disorders, individuals with schizophrenia and alcohol use disorder show unusually high delta power values suggesting that pronounced neural slowing may distinguish these conditions from others. We modeled psychiatric diagnosis as a categorical outcome using a multinomial model based on brainwave activity, age, gender, and cognitive ability. Individuals with unusually high frontal delta power were more likely to be classified with schizophrenia or alcohol use disorder.
-
-
 
 
 
