@@ -6,8 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Jishnu Veerapaneni">
 
-<title>Sources – Predicting Psychiatric Disorders</title>
+<title>Neural Markers of Psychiatric Disorders – Predicting Psychiatric Disorders</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -98,7 +99,7 @@ ul.task-list li input[type="checkbox"] {
 <span class="menu-text">Model</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link active" href="./Sources.html" aria-current="page"> 
+    <a class="nav-link" href="./Sources.html"> 
 <span class="menu-text">Sources</span></a>
   </li>  
   <li class="nav-item">
@@ -124,13 +125,19 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Sources</h1>
+<h1 class="title">Neural Markers of Psychiatric Disorders</h1>
 </div>
 
 
 
 <div class="quarto-title-meta">
 
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Jishnu Veerapaneni </p>
+          </div>
+  </div>
     
   
     
@@ -141,7 +148,6 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>The data used in this project was obtained from the Kaggle website, specifically from the dataset titled <a href="https://www.kaggle.com/datasets/shashwatwork/eeg-psychiatric-disorders-dataset/data">EEG Psychiatric Disorders Dataset</a>. The dataset includes information on various factors potentially associated with the risk of psychiatric conditions, such as age, gender, EEG readings, and IQ. Prior to analysis, the data was cleaned to ensure consistency and accuracy. This included handling missing values, converting categorical variables to consistent formats, and removing incomplete or irrelevant observations that lacked key variable information.</p>
 
 
 
@@ -218,7 +224,7 @@ ul.task-list li input[type="checkbox"] {
     }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
-        var filterRegex = new RegExp("https:\/\/jishnuvee\.github\.io\/Psychiatric-diagnosis\/");
+        var filterRegex = new RegExp('/' + window.location.host + '/');
       var isInternal = (href) => {
           return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
       }
