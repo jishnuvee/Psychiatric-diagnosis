@@ -7,17 +7,24 @@
     "text": "The data used in this project was obtained from the Kaggle website, specifically from the dataset titled EEG Psychiatric Disorders Dataset. The dataset includes information on various factors potentially associated with the risk of psychiatric conditions, such as age, gender, EEG readings, and IQ. Prior to analysis, the data was cleaned to ensure consistency and accuracy. This included handling missing values, converting categorical variables to consistent formats, and removing incomplete or irrelevant observations that lacked key variable information."
   },
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Neural Markers of Psychiatric Disorders",
-    "section": "",
-    "text": "Psychiatric disorders are shaped by a wide range of neurological, cognitive, and demographic factors that can be captured through EEG data. Using the EEG Psychiatric Disorders Dataset from Kaggle, which includes variables such as age, gender, IQ, and EEG readings, we seek to understand the relationship between brainwave activity and psychiatric conditions. The data was cleaned by filtering out incomplete records and focusing on delta power values at the FP1 and FP2 electrodes to explore patterns of neural slowing across disorders. While delta power at FP1 and FP2 electrodes are strongly correlated across disorders, individuals with schizophrenia and alcohol use disorder show unusually high delta power values suggesting that pronounced neural slowing may distinguish these conditions from others. We modeled psychiatric diagnosis as a categorical outcome using a multinomial model based on brainwave activity, age, gender, and cognitive ability. Individuals with unusually high frontal delta power were more likely to be classified with schizophrenia or alcohol use disorder."
-  },
-  {
     "objectID": "about.html",
     "href": "about.html",
     "title": "About",
     "section": "",
     "text": "Hello! My name is Jishnu Veerapaneni, I am an undergraduate at UIC studying neuroscience. My Github account is jishnuvee and my email is jishnuvee2035@gmail.com, please feel free to contact me if you havee any other questions or comments!\nThis project explores a psychiatric diagnosis dataset to identify and visualize key factors—such as age, EEG data, IQ, and gender: factors that may be associated with the prevelance of certain psychiatric conditions. The Github repo for this project.\nThis project was created as a part of Kane’s Data Science Bootcamp"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Neural Markers of Psychiatric Disorders",
+    "section": "",
+    "text": "Interesting Fact: Preliminary analysis suggests that 'Healthy control' subjects may exhibit higher alpha power at FP1 and FP2 compared to other disorders, potentially indicating greater relaxation or focused attention.\n\n\n\n\nPsychiatric disorders are shaped by a wide range of neurological, cognitive, and demographic factors that can be captured through EEG data. Using the EEG Psychiatric Disorders Dataset from Kaggle, which includes variables such as age, gender, IQ, and EEG readings, we seek to understand the relationship between brainwave activity and psychiatric conditions. The data was cleaned by filtering out incomplete records and focusing on delta power values at the FP1 and FP2 electrodes to explore patterns of neural slowing across disorders. While delta power at FP1 and FP2 electrodes are strongly correlated across disorders, individuals with schizophrenia and alcohol use disorder show unusually high delta power values suggesting that pronounced neural slowing may distinguish these conditions from others. We modeled psychiatric diagnosis as a categorical outcome using a multinomial model based on brainwave activity, age, gender, and cognitive ability. Individuals with unusually high frontal delta power were more likely to be classified with schizophrenia or alcohol use disorder."
+  },
+  {
+    "objectID": "Process.html",
+    "href": "Process.html",
+    "title": "Process",
+    "section": "",
+    "text": "Interesting Fact: Preliminary analysis suggests that 'Healthy control' subjects may exhibit higher alpha power at FP1 and FP2 compared to other disorders, potentially indicating greater relaxation or focused attention."
   }
 ]
