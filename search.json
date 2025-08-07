@@ -18,7 +18,7 @@
     "href": "Data.html",
     "title": "Visuals",
     "section": "",
-    "text": "Bar Chart Analysis\n\n\n\n\n\n\n\n\n\n\n\nViolin Plot Analysis\n\n\n\n\n\n\n\n\nInteractive EEG Analysis"
+    "text": "Interactive EEG Analysis"
   },
   {
     "objectID": "about.html",
@@ -37,8 +37,8 @@
   {
     "objectID": "Process.html",
     "href": "Process.html",
-    "title": "Process",
+    "title": "FP Electrodes",
     "section": "",
-    "text": "(make above words way smaller + add subtitle to graph explaining FP1 = Left electrode & FP2 = Right electrode)\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n 'Healthy control' subjects may exhibit higher alpha power at FP1 and FP2 compared to other disorders, potentially indicating greater relaxation or focused attention."
+    "text": "Bar Chart Analysis\n\n\n\n\n\n\n\n\n\n\n\n(make above words way smaller + add subtitle to graph explaining FP1 = Left electrode & FP2 = Right electrode)\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n 'Healthy control' subjects may exhibit higher alpha power at FP1 and FP2 compared to other disorders, potentially indicating greater relaxation or focused attention."
   }
 ]
