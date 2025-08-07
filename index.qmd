@@ -9,8 +9,119 @@ execute:
 ---
 
 
+# EEG = ElectroEncephaloGram
+# - Measures electrical activity of the brain via the usage of electrodes on the scalp
 
 
+```{r}
+# Load required libraries
+library(ggplot2)
+library(dplyr)
+
+# Create the coefficient data for F7 and F8 electrodes
+coeff_data <- data.frame(
+  disorder = c("Acute stress disorder", "Adjustment disorder", "Alcohol use disorder", 
+               "Behavioral addiction disorder", "Bipolar disorder", "Depressive disorder",
+               "Obsessive compulsive disorder", "Panic disorder", "Posttraumatic stress disorder",
+               "Schizophrenia", "Social anxiety disorder"),
+  
+  # F7 electrode data
+  f7_estimate = c(0.030, 0.073, 0.017, 0.005, 0.080, 0.030, 0.047, 0.077, 0.035, 0.081, 0.067),
+  f7_conf_low = c(-0.051, -0.001, -0.049, -0.064, 0.018, -0.026, -0.029, 0.011, -0.040, 0.022, 0.001),
+  f7_conf_high = c(0.110, 0.147, 0.083, 0.074, 0.143, 0.085, 0.123, 0.143, 0.111, 0.139, 0.133),
+  
+  # F8 electrode data  
+  f8_estimate = c(-0.030, -0.105, -0.046, -0.078, -0.087, -0.041, -0.062, -0.025, -0.046, -0.054, -0.030),
+  f8_conf_low = c(-0.104, -0.190, -0.106, -0.145, -0.154, -0.089, -0.139, -0.086, -0.116, -0.109, -0.092),
+  f8_conf_high = c(0.044, -0.021, 0.014, -0.011, -0.020, 0.008, 0.014, 0.037, 0.023, 0.001, 0.033)
+)
+
+# Add significance indicators
+coeff_data$f7_significant <- !(coeff_data$f7_conf_low <= 0 & coeff_data$f7_conf_high >= 0)
+coeff_data$f8_significant <- !(coeff_data$f8_conf_low <= 0 & coeff_data$f8_conf_high >= 0)
+
+# Create F7 plot
+f7_plot <- ggplot(coeff_data, aes(x = reorder(disorder, f7_estimate), y = f7_estimate)) +
+  geom_point(aes(color = f7_significant), size = 3) +
+  geom_errorbar(aes(ymin = f7_conf_low, ymax = f7_conf_high, color = f7_significant), 
+                width = 0.2, size = 0.8) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray50") +
+  scale_color_manual(values = c("FALSE" = "gray60", "TRUE" = "#e74c3c"), 
+                     name = "Significant", labels = c("No", "Yes")) +
+  coord_flip() +
+  labs(
+    title = "Delta Power Coefficients at F7 Electrode by Psychiatric Disorder",
+    subtitle = "F7 electrode positioned over left anterior temporal cortex\n(language processing, emotional memory, and auditory processing)",
+    x = "Psychiatric Disorder",
+    y = "Delta Power Coefficient (95% CI)",
+    caption = "Four disorders show significantly increased left temporal delta power (bipolar, panic, social anxiety, schizophrenia),\nsuggesting shared left-lateralized dysfunction in emotional and cognitive processing regions."
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14, face = "bold"),
+    plot.subtitle = element_text(size = 11, color = "gray30"),
+    plot.caption = element_text(size = 10, color = "gray40", hjust = 0),
+    axis.text.y = element_text(size = 10),
+    legend.position = "bottom"
+  )
+
+# Create F8 plot
+f8_plot <- ggplot(coeff_data, aes(x = reorder(disorder, f8_estimate), y = f8_estimate)) +
+  geom_point(aes(color = f8_significant), size = 3) +
+  geom_errorbar(aes(ymin = f8_conf_low, ymax = f8_conf_high, color = f8_significant), 
+                width = 0.2, size = 0.8) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray50") +
+  scale_color_manual(values = c("FALSE" = "gray60", "TRUE" = "#3498db"), 
+                     name = "Significant", labels = c("No", "Yes")) +
+  coord_flip() +
+  labs(
+    title = "Delta Power Coefficients at F8 Electrode by Psychiatric Disorder",
+    subtitle = "F8 electrode positioned over right anterior temporal cortex\n(spatial processing, prosody, and non-verbal emotional processing)",
+    x = "Psychiatric Disorder",
+    y = "Delta Power Coefficient (95% CI)",
+    caption = "Multiple disorders show reduced right temporal delta power, with significant decreases in adjustment and\nbehavioral addiction disorders, indicating right-hemisphere compensation or altered connectivity patterns."
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14, face = "bold"),
+    plot.subtitle = element_text(size = 11, color = "gray30"),
+    plot.caption = element_text(size = 10, color = "gray40", hjust = 0),
+    axis.text.y = element_text(size = 10),
+    legend.position = "bottom"
+  )
+
+# Display the plots
+print(f7_plot)
+print(f8_plot)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# (make above words way smaller + add subtitle to graph explaining FP1 = Left electrode & FP2 = Right electrode)
 ```{r}
 # Load required packages
 library(tidyverse)
@@ -116,7 +227,7 @@ ggsave("FP1_EEG_Power.png", fp1_plot, width = 10, height = 6, dpi = 300)
 ggsave("FP2_EEG_Power.png", fp2_plot, width = 10, height = 6, dpi = 300)
 
 # Print interesting fact
-cat("Interesting Fact: Preliminary analysis suggests that 'Healthy control' subjects may exhibit higher alpha power at FP1 and FP2 compared to other disorders, potentially indicating greater relaxation or focused attention.\n")
+cat(" 'Healthy control' subjects may exhibit higher alpha power at FP1 and FP2 compared to other disorders, potentially indicating greater relaxation or focused attention.")
 
 ```
 
@@ -147,6 +258,7 @@ cat("Interesting Fact: Preliminary analysis suggests that 'Healthy control' subj
 
 ###
 
-Psychiatric disorders are shaped by a wide range of neurological, cognitive, and demographic factors that can be captured through EEG data. Using the EEG Psychiatric Disorders Dataset from Kaggle, which includes variables such as age, gender, IQ, and EEG readings, we seek to understand the relationship between brainwave activity and psychiatric conditions. The data was cleaned by filtering out incomplete records and focusing on delta power values at the FP1 and FP2 electrodes to explore patterns of neural slowing across disorders. While delta power at FP1 and FP2 electrodes are strongly correlated across disorders, Compared to healthy controls, all psychiatric disorders show elevated frontal EEG power, with stress and trauma-related disorders demonstrating the most pronounced increases. These patterns are primarily driven by Theta and Alpha band activity, supporting a shared mechanism of frontal dysregulation across psychiatric categories, with unique variations in power depending on the specific disorder type and suggesting that pronounced neural slowing may distinguish these conditions from others. We modeled psychiatric diagnosis as a categorical outcome using a multinomial model based on brainwave activity, age, gender, and cognitive ability. Individuals with unusually high frontal delta power were more likely to be classified with acute stress disorder or posttraumatic stress disorder (PTSD).
+Psychiatric disorders are shaped by a wide range of neurological, cognitive, and demographic factors that can be captured through EEG data. Using the EEG Psychiatric Disorders Dataset from Kaggle, which includes variables such as age, gender, IQ, and EEG readings, we seek to understand the relationship between brainwave activity and psychiatric conditions. The data was cleaned by filtering out incomplete records and focusing on delta power values at the FP1 and FP2 electrodes to explore patterns of neural slowing across disorders. While delta power at FP1 and FP2 electrodes are strongly correlated across disorders, compared to healthy controls, all psychiatric disorders show elevated frontal EEG power, with stress and trauma-related disorders demonstrating the most pronounced increases. These patterns are primarily driven by Theta and Alpha band activity, supporting a shared mechanism of frontal dysregulation across psychiatric categories, with unique variations in power depending on the specific disorder type and suggesting that pronounced neural slowing may distinguish these conditions from others. We modeled psychiatric diagnosis as a categorical outcome using a multinomial model based on brainwave activity, age, gender, and cognitive ability. Individuals with unusually high frontal delta power were more likely to be classified with acute stress disorder or posttraumatic stress disorder (PTSD).
 
 
+This project examined how frontal EEG activity relates to psychiatric diagnoses using a dataset containing brainwave, cognitive, and demographic data. We focused on delta power at the FP1 and FP2 electrodes to explore patterns of neural slowing across disorders. Healthy individuals showed the lowest EEG power, while mood disorders showed moderate increases in Theta and Alpha bands, reflecting emotional dysregulation. Power distributions were similar between hemispheres, suggesting coordinated frontal activity, though subtle right-sided Theta increases were seen in schizophrenia. Individuals with unusually high frontal delta power were more likely to be classified with acute stress disorder or PTSD.

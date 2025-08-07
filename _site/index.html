@@ -126,7 +126,12 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#section" id="toc-section" class="nav-link active" data-scroll-target="#section"></a></li>
+  <li><a href="#eeg-electroencephalogram" id="toc-eeg-electroencephalogram" class="nav-link active" data-scroll-target="#eeg-electroencephalogram">EEG = ElectroEncephaloGram</a></li>
+  <li><a href="#measures-electrical-activity-of-the-brain-via-the-usage-of-electrodes-on-the-scalp" id="toc-measures-electrical-activity-of-the-brain-via-the-usage-of-electrodes-on-the-scalp" class="nav-link" data-scroll-target="#measures-electrical-activity-of-the-brain-via-the-usage-of-electrodes-on-the-scalp">- Measures electrical activity of the brain via the usage of electrodes on the scalp</a></li>
+  <li><a href="#make-above-words-way-smaller-add-subtitle-to-graph-explaining-fp1-left-electrode-fp2-right-electrode" id="toc-make-above-words-way-smaller-add-subtitle-to-graph-explaining-fp1-left-electrode-fp2-right-electrode" class="nav-link" data-scroll-target="#make-above-words-way-smaller-add-subtitle-to-graph-explaining-fp1-left-electrode-fp2-right-electrode">(make above words way smaller + add subtitle to graph explaining FP1 = Left electrode &amp; FP2 = Right electrode)</a>
+  <ul class="collapse">
+  <li><a href="#section" id="toc-section" class="nav-link" data-scroll-target="#section"></a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -158,6 +163,11 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
+<section id="eeg-electroencephalogram" class="level1">
+<h1>EEG = ElectroEncephaloGram</h1>
+</section>
+<section id="measures-electrical-activity-of-the-brain-via-the-usage-of-electrodes-on-the-scalp" class="level1">
+<h1>- Measures electrical activity of the brain via the usage of electrodes on the scalp</h1>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -173,15 +183,36 @@ ul.task-list li input[type="checkbox"] {
 </figure>
 </div>
 </div>
+</div>
+</section>
+<section id="make-above-words-way-smaller-add-subtitle-to-graph-explaining-fp1-left-electrode-fp2-right-electrode" class="level1">
+<h1>(make above words way smaller + add subtitle to graph explaining FP1 = Left electrode &amp; FP2 = Right electrode)</h1>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-2-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Interesting Fact: Preliminary analysis suggests that 'Healthy control' subjects may exhibit higher alpha power at FP1 and FP2 compared to other disorders, potentially indicating greater relaxation or focused attention.</code></pre>
+<pre><code> 'Healthy control' subjects may exhibit higher alpha power at FP1 and FP2 compared to other disorders, potentially indicating greater relaxation or focused attention.</code></pre>
 </div>
 </div>
 <section id="section" class="level3">
 <h3 class="anchored" data-anchor-id="section"></h3>
-<p>Psychiatric disorders are shaped by a wide range of neurological, cognitive, and demographic factors that can be captured through EEG data. Using the EEG Psychiatric Disorders Dataset from Kaggle, which includes variables such as age, gender, IQ, and EEG readings, we seek to understand the relationship between brainwave activity and psychiatric conditions. The data was cleaned by filtering out incomplete records and focusing on delta power values at the FP1 and FP2 electrodes to explore patterns of neural slowing across disorders. While delta power at FP1 and FP2 electrodes are strongly correlated across disorders, individuals with schizophrenia and alcohol use disorder show unusually high delta power values suggesting that pronounced neural slowing may distinguish these conditions from others. We modeled psychiatric diagnosis as a categorical outcome using a multinomial model based on brainwave activity, age, gender, and cognitive ability. Individuals with unusually high frontal delta power were more likely to be classified with schizophrenia or alcohol use disorder.</p>
+<p>Psychiatric disorders are shaped by a wide range of neurological, cognitive, and demographic factors that can be captured through EEG data. Using the EEG Psychiatric Disorders Dataset from Kaggle, which includes variables such as age, gender, IQ, and EEG readings, we seek to understand the relationship between brainwave activity and psychiatric conditions. The data was cleaned by filtering out incomplete records and focusing on delta power values at the FP1 and FP2 electrodes to explore patterns of neural slowing across disorders. While delta power at FP1 and FP2 electrodes are strongly correlated across disorders, compared to healthy controls, all psychiatric disorders show elevated frontal EEG power, with stress and trauma-related disorders demonstrating the most pronounced increases. These patterns are primarily driven by Theta and Alpha band activity, supporting a shared mechanism of frontal dysregulation across psychiatric categories, with unique variations in power depending on the specific disorder type and suggesting that pronounced neural slowing may distinguish these conditions from others. We modeled psychiatric diagnosis as a categorical outcome using a multinomial model based on brainwave activity, age, gender, and cognitive ability. Individuals with unusually high frontal delta power were more likely to be classified with acute stress disorder or posttraumatic stress disorder (PTSD).</p>
+<p>This project examined how frontal EEG activity relates to psychiatric diagnoses using a dataset containing brainwave, cognitive, and demographic data. We focused on delta power at the FP1 and FP2 electrodes to explore patterns of neural slowing across disorders. Healthy individuals showed the lowest EEG power, while mood disorders showed moderate increases in Theta and Alpha bands, reflecting emotional dysregulation. Power distributions were similar between hemispheres, suggesting coordinated frontal activity, though subtle right-sided Theta increases were seen in schizophrenia. Individuals with unusually high frontal delta power were more likely to be classified with acute stress disorder or PTSD.</p>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
@@ -257,7 +288,7 @@ ul.task-list li input[type="checkbox"] {
     }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
-        var filterRegex = new RegExp("https:\/\/jishnuvee\.github\.io\/Psychiatric-diagnosis\/");
+        var filterRegex = new RegExp('/' + window.location.host + '/');
       var isInternal = (href) => {
           return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
       }

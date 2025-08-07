@@ -7,19 +7,6 @@ execute:
 
 # EEG Multinomial Regression with Individual Delta Power
 
-
-
----
-title: "Model"
-format: html
-execute: 
-  echo: false
----
-
-
-
-# EEG Multinomial Regression with Individual Delta Power
-
 The following equation represents the multinomial logistic regression model used to predict psychiatric disorders from demographic and EEG delta power variables:
 
 $$
@@ -33,6 +20,7 @@ $$
 \end{align*}
 $$
 
+
 ```{r}
 #| warning: false
 #| message: false
@@ -41,39 +29,36 @@ $$
 suppressPackageStartupMessages({
   library(tidyverse)
   library(tidymodels)
-  library(yardstick)
-  library(nnet)  # For multinom function
-  library(car)   # For VIF calculation
+  library(nnet)    # For multinom()
+  library(car)     # For VIF
+  library(knitr)   # For kable output
+   library(marginaleffects)
 })
 
-# Set random seed for reproducibility
 set.seed(123)
 
-# Load the real dataset
+# Load dataset
 df <- read_csv("EEG.machinelearing_data_BRMH.csv")
 
-# Preprocess the data
+# Preprocess
 df <- df %>%
   mutate(
     sex = as.factor(sex),
-    specific.disorder = as.factor(specific.disorder)
-  ) %>%
-  mutate(
-    specific.disorder = relevel(specific.disorder, ref = "Healthy control")
+    specific.disorder = relevel(as.factor(specific.disorder), ref = "Healthy control")
   ) %>%
   filter(complete.cases(education, age, sex, IQ, 
                         AB.A.delta.a.FP1, AB.A.delta.b.FP2, AB.A.delta.c.F7, 
                         AB.A.delta.d.F3, AB.A.delta.e.Fz, AB.A.delta.f.F4, 
                         AB.A.delta.g.F8, specific.disorder))
 
-# Check for collinearity using Variance Inflation Factor (VIF)
+# VIF using multinom
 vif_model <- multinom(specific.disorder ~ education + age + sex + IQ + 
                       AB.A.delta.a.FP1 + AB.A.delta.b.FP2 + AB.A.delta.c.F7 + 
                       AB.A.delta.d.F3 + AB.A.delta.e.Fz + AB.A.delta.f.F4 + 
                       AB.A.delta.g.F8, data = df, maxit = 1000)
 vif_values <- vif(vif_model)
 
-# Fit multinomial logistic regression model
+# Fit multinomial logistic regression
 fit_disorder <- multinom_reg(mode = "classification") %>%
   set_engine("nnet", maxit = 1000) %>%
   fit(specific.disorder ~ education + age + sex + IQ + 
@@ -81,14 +66,10 @@ fit_disorder <- multinom_reg(mode = "classification") %>%
         AB.A.delta.d.F3 + AB.A.delta.e.Fz + AB.A.delta.f.F4 + 
         AB.A.delta.g.F8, data = df)
 
-# Extract model coefficients with confidence intervals
-model_results <- tidy(fit_disorder, conf.int = TRUE)
-
-# Display model results
-model_results %>%
+# Extract and display model results
+tidy(fit_disorder, conf.int = TRUE) %>%
   select(term, y.level, estimate, std.error, conf.low, conf.high) %>%
-  knitr::kable(digits = 3, caption = "Model Coefficients and Confidence Intervals")
+  kable(digits = 3, caption = "Model Coefficients and Confidence Intervals")
 
 ```
-
 
