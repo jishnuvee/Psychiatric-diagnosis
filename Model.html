@@ -68,6 +68,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="styles.css">
 </head>
@@ -125,11 +154,8 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#data-preprocessing-and-model-fitting" id="toc-data-preprocessing-and-model-fitting" class="nav-link active" data-scroll-target="#data-preprocessing-and-model-fitting">Data Preprocessing and Model Fitting</a></li>
-  <li><a href="#eeg-multinomial-regression-with-individual-delta-power" id="toc-eeg-multinomial-regression-with-individual-delta-power" class="nav-link" data-scroll-target="#eeg-multinomial-regression-with-individual-delta-power">EEG Multinomial Regression with Individual Delta Power</a>
-  <ul class="collapse">
-  <li><a href="#model-equations" id="toc-model-equations" class="nav-link" data-scroll-target="#model-equations">Model Equations</a></li>
-  </ul></li>
+  <li><a href="#eeg-multinomial-regression-with-individual-delta-power" id="toc-eeg-multinomial-regression-with-individual-delta-power" class="nav-link active" data-scroll-target="#eeg-multinomial-regression-with-individual-delta-power">EEG Multinomial Regression with Individual Delta Power</a></li>
+  <li><a href="#eeg-multinomial-regression-with-individual-delta-power-1" id="toc-eeg-multinomial-regression-with-individual-delta-power-1" class="nav-link" data-scroll-target="#eeg-multinomial-regression-with-individual-delta-power-1">EEG Multinomial Regression with Individual Delta Power</a></li>
   </ul>
 </nav>
     </div>
@@ -155,15 +181,22 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<section id="data-preprocessing-and-model-fitting" class="level2">
-<h2 class="anchored" data-anchor-id="data-preprocessing-and-model-fitting">Data Preprocessing and Model Fitting</h2>
-</section>
 <section id="eeg-multinomial-regression-with-individual-delta-power" class="level1">
 <h1>EEG Multinomial Regression with Individual Delta Power</h1>
-<p>This analysis uses the real EEG dataset (<code>EEG.machinelearing_data_BRMH.csv</code>) to predict <code>specific.disorder</code> using multinomial logistic regression. Predictors include demographic variables (<code>education</code>, <code>age</code>, <code>sex</code>, <code>IQ</code>) and individual delta power measurements from frontal electrodes (<code>AB.A.delta.a.FP1</code>, <code>AB.A.delta.b.FP2</code>, <code>AB.A.delta.c.F7</code>, <code>AB.A.delta.d.F3</code>, <code>AB.A.delta.e.Fz</code>, <code>AB.A.delta.f.F4</code>, <code>AB.A.delta.g.F8</code>).</p>
-<section id="model-equations" class="level3">
-<h3 class="anchored" data-anchor-id="model-equations">Model Equations</h3>
-<p>The model estimates log-odds for each disorder relative to a reference category (set to “Healthy control” if present, otherwise the first alphabetical category). Coefficients are derived from the data and shown below.</p>
+</section>
+<section id="eeg-multinomial-regression-with-individual-delta-power-1" class="level1">
+<h1>EEG Multinomial Regression with Individual Delta Power</h1>
+<p>The following equation represents the multinomial logistic regression model used to predict psychiatric disorders from demographic and EEG delta power variables:</p>
+<p><span class="math display">\[
+\begin{align*}
+\log\left( \frac{P(\texttt{specific.disorder} = k)}{P(\texttt{specific.disorder} = \text{baseline})} \right) =\
+&amp; \beta_{0,k} + \beta_{1,k} \cdot \texttt{education} + \beta_{2,k} \cdot \texttt{age} + \beta_{3,k} \cdot \texttt{sex} + \beta_{4,k} \cdot \texttt{IQ} \\
+&amp; + \beta_{5,k} \cdot \texttt{AB.A.delta.a.FP1} + \beta_{6,k} \cdot \texttt{AB.A.delta.b.FP2} \\
+&amp; + \beta_{7,k} \cdot \texttt{AB.A.delta.c.F7} + \beta_{8,k} \cdot \texttt{AB.A.delta.d.F3} \\
+&amp; + \beta_{9,k} \cdot \texttt{AB.A.delta.e.Fz} + \beta_{10,k} \cdot \texttt{AB.A.delta.f.F4} \\
+&amp; + \beta_{11,k} \cdot \texttt{AB.A.delta.g.F8}
+\end{align*}
+\]</span></p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code># weights:  156 (132 variable)
@@ -183,14 +216,6 @@ iter 120 value 1878.394727
 iter 130 value 1869.968058
 final  value 1869.683332 
 converged</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>       education              age              sex               IQ 
-       76.179428        23.962854         1.292793        92.419795 
-AB.A.delta.a.FP1 AB.A.delta.b.FP2  AB.A.delta.c.F7  AB.A.delta.d.F3 
-       40.972928        29.378480        24.420382        57.985822 
- AB.A.delta.e.Fz  AB.A.delta.f.F4  AB.A.delta.g.F8 
-       68.464784        80.879362        18.169071 </code></pre>
 </div>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
@@ -1276,7 +1301,6 @@ AB.A.delta.a.FP1 AB.A.delta.b.FP2  AB.A.delta.c.F7  AB.A.delta.d.F3
 </div>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->
