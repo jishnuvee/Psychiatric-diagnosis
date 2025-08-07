@@ -104,7 +104,7 @@ ul.task-list li input[type="checkbox"] {
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="./Data.html"> 
-<span class="menu-text">Data</span></a>
+<span class="menu-text">Visuals</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="./Process.html"> 
@@ -125,8 +125,16 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#section" id="toc-section" class="nav-link active" data-scroll-target="#section"></a></li>
+  <li><a href="#section-1" id="toc-section-1" class="nav-link" data-scroll-target="#section-1"></a></li>
+  <li><a href="#section-2" id="toc-section-2" class="nav-link" data-scroll-target="#section-2"></a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -176,6 +184,8 @@ Note
 </figure>
 </div>
 <p><em>The above diagram shows the standard 10-20 EEG electrode placement system. F7 (left) and F8 (right) electrodes, highlighted in yellow, are positioned over the anterior temporal cortex regions that we analyzed in this study.</em></p>
+<section id="section" class="level3">
+<h3 class="anchored" data-anchor-id="section"></h3>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -184,17 +194,26 @@ Note
 </figure>
 </div>
 </div>
+</div>
+</section>
+<section id="section-1" class="level3">
+<h3 class="anchored" data-anchor-id="section-1"></h3>
+<div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-1-2.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
 </figure>
 </div>
 </div>
 </div>
+</section>
+<section id="section-2" class="level3">
+<h3 class="anchored" data-anchor-id="section-2"></h3>
 <p>Psychiatric disorders are shaped by a wide range of neurological, cognitive, and demographic factors that can be captured through EEG data. Using the EEG Psychiatric Disorders Dataset from Kaggle, which includes variables such as age, gender, IQ, and brain wave readings from multiple electrode positions, we seek to understand the relationship between temporal lobe activity and psychiatric conditions. The data was cleaned by filtering out incomplete records and focusing on delta power values at the F7 and F8 temporal electrodes to explore patterns of neural activity across disorders. While descriptive analysis showed elevated EEG power across psychiatric disorders compared to healthy controls, multinomial regression revealed that the temporal regions showed the most significant associations with psychiatric diagnoses. Specifically, F7 (left anterior temporal) electrode showed significantly increased delta power in four disorders—bipolar disorder, panic disorder, social anxiety disorder, and schizophrenia—while F8 (right anterior temporal) showed significant decreases in adjustment disorder and behavioral addiction disorder. These patterns suggest hemispheric asymmetry in psychiatric conditions, with left temporal hyperactivity potentially reflecting disrupted language processing, emotional memory, and auditory integration, while right temporal hypoactivity may indicate altered spatial processing and non-verbal emotional regulation. We modeled psychiatric diagnosis as a categorical outcome using a multinomial model based on brainwave activity, age, gender, and cognitive ability. Bipolar disorder, panic disorder, social anxiety disorder, and schizophrenia all show significantly increased left temporal (F7) delta power, with bipolar disorder demonstrating the strongest effect at 0.080 units (95% CI: 0.018 to 0.143), suggesting that left-hemisphere temporal abnormalities could potentially aid in early detection and diagnosis of these specific psychiatric conditions, though the wide confidence intervals indicate substantial uncertainty in the true magnitude of these neurological signatures.</p>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
