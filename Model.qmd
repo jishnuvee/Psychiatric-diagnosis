@@ -5,19 +5,33 @@ execute:
   echo: false
 ---
 
-## Data Preprocessing and Model Fitting
-
-
 # EEG Multinomial Regression with Individual Delta Power
 
 
 
+---
+title: "Model"
+format: html
+execute: 
+  echo: false
+---
 
 
-This analysis uses the real EEG dataset (`EEG.machinelearing_data_BRMH.csv`) to predict `specific.disorder` using multinomial logistic regression. Predictors include demographic variables (`education`, `age`, `sex`, `IQ`) and individual delta power measurements from frontal electrodes (`AB.A.delta.a.FP1`, `AB.A.delta.b.FP2`, `AB.A.delta.c.F7`, `AB.A.delta.d.F3`, `AB.A.delta.e.Fz`, `AB.A.delta.f.F4`, `AB.A.delta.g.F8`).
 
-### Model Equations
-The model estimates log-odds for each disorder relative to a reference category (set to "Healthy control" if present, otherwise the first alphabetical category). Coefficients are derived from the data and shown below.
+# EEG Multinomial Regression with Individual Delta Power
+
+The following equation represents the multinomial logistic regression model used to predict psychiatric disorders from demographic and EEG delta power variables:
+
+$$
+\begin{align*}
+\log\left( \frac{P(\texttt{specific.disorder} = k)}{P(\texttt{specific.disorder} = \text{baseline})} \right) =\ 
+& \beta_{0,k} + \beta_{1,k} \cdot \texttt{education} + \beta_{2,k} \cdot \texttt{age} + \beta_{3,k} \cdot \texttt{sex} + \beta_{4,k} \cdot \texttt{IQ} \\
+& + \beta_{5,k} \cdot \texttt{AB.A.delta.a.FP1} + \beta_{6,k} \cdot \texttt{AB.A.delta.b.FP2} \\
+& + \beta_{7,k} \cdot \texttt{AB.A.delta.c.F7} + \beta_{8,k} \cdot \texttt{AB.A.delta.d.F3} \\
+& + \beta_{9,k} \cdot \texttt{AB.A.delta.e.Fz} + \beta_{10,k} \cdot \texttt{AB.A.delta.f.F4} \\
+& + \beta_{11,k} \cdot \texttt{AB.A.delta.g.F8}
+\end{align*}
+$$
 
 ```{r}
 #| warning: false
@@ -40,16 +54,13 @@ df <- read_csv("EEG.machinelearing_data_BRMH.csv")
 
 # Preprocess the data
 df <- df %>%
-  # Convert sex and specific.disorder to factors
   mutate(
     sex = as.factor(sex),
     specific.disorder = as.factor(specific.disorder)
   ) %>%
-  # Set "Healthy control" as reference level if it exists
   mutate(
     specific.disorder = relevel(specific.disorder, ref = "Healthy control")
   ) %>%
-  # Remove rows with missing values in predictors or outcome
   filter(complete.cases(education, age, sex, IQ, 
                         AB.A.delta.a.FP1, AB.A.delta.b.FP2, AB.A.delta.c.F7, 
                         AB.A.delta.d.F3, AB.A.delta.e.Fz, AB.A.delta.f.F4, 
@@ -61,11 +72,10 @@ vif_model <- multinom(specific.disorder ~ education + age + sex + IQ +
                       AB.A.delta.d.F3 + AB.A.delta.e.Fz + AB.A.delta.f.F4 + 
                       AB.A.delta.g.F8, data = df, maxit = 1000)
 vif_values <- vif(vif_model)
-print(vif_values)
 
 # Fit multinomial logistic regression model
 fit_disorder <- multinom_reg(mode = "classification") %>%
-  set_engine("nnet", maxit = 1000) %>%  # Specify maxit in set_engine
+  set_engine("nnet", maxit = 1000) %>%
   fit(specific.disorder ~ education + age + sex + IQ + 
         AB.A.delta.a.FP1 + AB.A.delta.b.FP2 + AB.A.delta.c.F7 + 
         AB.A.delta.d.F3 + AB.A.delta.e.Fz + AB.A.delta.f.F4 + 
