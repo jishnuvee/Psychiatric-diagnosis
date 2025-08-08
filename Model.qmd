@@ -52,24 +52,26 @@ df <- df %>%
                         AB.A.delta.g.F8, specific.disorder))
 
 # VIF using multinom
-vif_model <- multinom(specific.disorder ~ education + age + sex + IQ + 
-                      AB.A.delta.a.FP1 + AB.A.delta.b.FP2 + AB.A.delta.c.F7 + 
-                      AB.A.delta.d.F3 + AB.A.delta.e.Fz + AB.A.delta.f.F4 + 
-                      AB.A.delta.g.F8, data = df, maxit = 1000)
-vif_values <- vif(vif_model)
-
-# Fit multinomial logistic regression
+# For tidymodels approach
 fit_disorder <- multinom_reg(mode = "classification") %>%
-  set_engine("nnet", maxit = 1000) %>%
-  fit(specific.disorder ~ education + age + sex + IQ + 
-        AB.A.delta.a.FP1 + AB.A.delta.b.FP2 + AB.A.delta.c.F7 + 
-        AB.A.delta.d.F3 + AB.A.delta.e.Fz + AB.A.delta.f.F4 + 
-        AB.A.delta.g.F8, data = df)
+  set_engine("nnet", maxit = 1000, trace = FALSE) %>%
+  fit(specific.disorder ~ education + age + sex + IQ +
+         AB.A.delta.a.FP1 + AB.A.delta.b.FP2 + AB.A.delta.c.F7 +
+         AB.A.delta.d.F3 + AB.A.delta.e.Fz + AB.A.delta.f.F4 +
+         AB.A.delta.g.F8, data = df)
 
+# For the VIF model
+vif_model <- multinom(specific.disorder ~ education + age + sex + IQ +
+                       AB.A.delta.a.FP1 + AB.A.delta.b.FP2 + AB.A.delta.c.F7 +
+                       AB.A.delta.d.F3 + AB.A.delta.e.Fz + AB.A.delta.f.F4 +
+                       AB.A.delta.g.F8, data = df, maxit = 1000, trace = FALSE)
+
+                      
 # Extract and display model results
 tidy(fit_disorder, conf.int = TRUE) %>%
   select(term, y.level, estimate, std.error, conf.low, conf.high) %>%
   kable(digits = 3, caption = "Model Coefficients and Confidence Intervals")
 
 ```
+
 

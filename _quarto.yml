@@ -8,8 +8,9 @@ website:
       - href: index.qmd
         text: Home
       - Model.qmd
-      - Sources.qmd
+      - Process.qmd
       - Data.qmd
+      - Sources.qmd
       - about.qmd
 
 format:
